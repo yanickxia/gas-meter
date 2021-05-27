@@ -32,7 +32,7 @@ func (r *rawProtocol) Invalid() error {
 	}
 
 	if dataLen > 54 {
-		return errors.New("data length maximum is 54")
+		return errors.New("parse length maximum is 54")
 	}
 
 	bodyLen := int(r.Length()) - 4
@@ -41,7 +41,7 @@ func (r *rawProtocol) Invalid() error {
 	}
 
 	if bodyLen+6 != dataLen {
-		return errors.New("data length invalid")
+		return errors.New("parse length invalid")
 	}
 
 	// 将目的地址（含目的地址）与校验和（含校验和）之间的所有数据累加和 MOD 256的结果应等于零

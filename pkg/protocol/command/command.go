@@ -21,6 +21,10 @@ type command struct {
 	command byte
 }
 
+func NewCommand(c byte) Command {
+	return &command{c}
+}
+
 func (c *command) Type() Type {
 	cmd := c.command >> 5
 	switch cmd {

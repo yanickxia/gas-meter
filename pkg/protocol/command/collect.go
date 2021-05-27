@@ -27,6 +27,19 @@ func NewCollectCommand(command *command) CollectCommand {
 }
 
 func (c *collectCommand) Type() CollectType {
-	//TODO
-	return ""
+	cmd := c.command.command << 3 >> 3
+	switch cmd {
+	case 0x00:
+		return CollectPassword
+	case 0x01:
+		return CollectAddress
+	case 0x02:
+		return CollectBaud
+	case 0x04:
+		return CollectDevice
+	case 0x06:
+		return CollectParam
+	default:
+		return CollectReserve
+	}
 }
