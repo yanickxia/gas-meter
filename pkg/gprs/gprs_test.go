@@ -2,30 +2,29 @@ package gprs
 
 import (
 	"encoding/hex"
+	"net"
 	"reflect"
 	"testing"
 )
 
 func TestNewModelInfo(t *testing.T) {
-	testData1, _ := hex.DecodeString("A42813940052003")
+	testData1, _ := hex.DecodeString("413432383133393430303532303033000a00000100")
 	type args struct {
 		data []byte
 	}
 	tests := []struct {
 		name    string
 		args    args
-		want    *ModelInfo
+		want    *ModemInfo
 		wantErr bool
 	}{
 		{
 			name: "test new",
 			args: args{data: testData1},
-			want: &ModelInfo{
-				ModelId:        nil,
-				Phone:          nil,
-				DynIP:          nil,
-				ConnectionTime: nil,
-				RefreshTime:    nil,
+			want: &ModemInfo{
+				ModemId: "41343238",
+				Phone:   "13940052003",
+				DynIP:   net.IP{10, 0, 0, 1},
 			},
 			wantErr: false,
 		},

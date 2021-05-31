@@ -2,43 +2,53 @@ package gprs
 
 import (
 	"bytes"
+	"encoding/hex"
 	"errors"
+	"net"
+	"time"
 )
 
-type ModelInfo struct {
-	ModelId        []byte
-	Phone          []byte
-	DynIP          []byte
-	ConnectionTime []byte
-	RefreshTime    []byte
+const (
+	RegisterInfoLen = 21
+)
+
+type RegisterInfo = ModemInfo
+
+type ModemInfo struct {
+	ModemId string
+	Phone   string
+	DynIP   net.IP
 }
 
-func NewModelInfo(data []byte) (*ModelInfo, error) {
-	if len(data) != 18 {
-		return nil, errors.New("mode info should 18 bytes")
+func NewModelInfo(data []byte) (*ModemInfo, error) {
+	if len(data) != 21 {
+		return nil, errors.New("mode info should 21 bytes")
 	}
 
 	reader := bytes.NewReader(data)
-	modelId := make([]byte, 2)
+	modelId := make([]byte, 4)
 	_, _ = reader.Read(modelId)
 
 	phone := make([]byte, 12)
 	_, _ = reader.Read(phone)
 
+	phoneStr := ""
+	for i := 0; i < 11; i++ {
+		phoneStr += string(phone[i])
+	}
+
 	dynip := make([]byte, 4)
 	_, _ = reader.Read(dynip)
 
-	connTime := make([]byte, 8)
-	_, _ = reader.Read(connTime)
-
-	refTime := make([]byte, 8)
-	_, _ = reader.Read(refTime)
-
-	return &ModelInfo{
-		ModelId:        modelId,
-		Phone:          phone,
-		DynIP:          dynip,
-		ConnectionTime: connTime,
-		RefreshTime:    refTime,
+	return &ModemInfo{
+		ModemId: hex.EncodeToString(modelId),
+		Phone:   phoneStr,
+		DynIP:   dynip,
 	}, nil
+}
+
+type ModemData struct {
+	ModemId  uint32
+	RecvTime time.Time
+	Data     []byte
 }

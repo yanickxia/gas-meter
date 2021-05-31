@@ -15,6 +15,7 @@ type RawProtocol interface {
 	Body() []byte
 	Checksum() byte
 	Invalid() error
+	Bytes() []byte
 }
 
 type rawProtocol struct {
@@ -23,6 +24,14 @@ type rawProtocol struct {
 
 func NewRawProtocol(data []byte) RawProtocol {
 	return &rawProtocol{data: data}
+}
+
+func (r *rawProtocol) Bytes() []byte {
+	bytes := make([]byte, 0)
+	bytes = append(bytes, MagicHeader, r.Length(), r.Dest(), r.Source(), r.Command())
+	bytes = append(bytes, r.Body()...)
+	bytes = append(bytes, r.Checksum())
+	return bytes
 }
 
 func (r *rawProtocol) Invalid() error {
