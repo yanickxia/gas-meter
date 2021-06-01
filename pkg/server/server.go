@@ -7,9 +7,13 @@ import (
 	"net"
 	"os"
 
-	"github.com/sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	"github.com/yanickxia/gas-meter/pkg/gprs"
 	"github.com/yanickxia/gas-meter/pkg/protocol"
+)
+
+const (
+	maxRead = 512
 )
 
 type Server interface {
@@ -43,14 +47,14 @@ func (s *server) Run() error {
 	for {
 		conn, err := listener.Accept()
 		if err != nil {
-			logrus.Errorf("Error accepting: %s", err.Error())
+			log.Errorf("Error accepting: %s", err.Error())
 			continue
 		}
 		// Handle connections in a new goroutine.
 		go func() {
 			err := s.handle(conn)
 			if err != nil {
-				logrus.Errorf("Error accepting: %s", err.Error())
+				log.Errorf("Error accepting: %s", err.Error())
 			}
 		}()
 	}
@@ -61,6 +65,7 @@ func (s *server) handle(c net.Conn) error {
 	if err != nil {
 		return err
 	}
+	log.Infof("device registed: %v", info)
 
 	conn := &Connection{
 		c:    c,
@@ -79,22 +84,23 @@ func (s *server) handle(c net.Conn) error {
 		if err != nil {
 			return err
 		}
-		logrus.Infof("got data: %s", readProtocol)
+		log.Infof("got data: %v", readProtocol)
 	}
 }
 
 func (s *server) register(c net.Conn) (*gprs.RegisterInfo, error) {
 	shouldRead := gprs.RegisterInfoLen
-	bytes := make([]byte, shouldRead)
+	bytes := make([]byte, 0)
 
 	for {
-		tmp := make([]byte, 0)
+		tmp := make([]byte, gprs.RegisterInfoLen)
 		read, err := c.Read(tmp)
 		if err != nil {
 			return nil, err
 		}
 
-		bytes = append(bytes, tmp...)
+		bytes = append(bytes, tmp[0:read]...)
+		log.Debugf("receive bytes %x", tmp[0:read])
 
 		if read <= shouldRead {
 			shouldRead -= read
@@ -116,7 +122,7 @@ func (s *server) command(protocol protocol.RawProtocol, c *Connection) error {
 	if err != nil {
 		return err
 	}
-
+	log.Debugf("write bytes: %x", bytes[0:n])
 	if n != len(bytes) {
 		return errors.New("fill data failed")
 	}
@@ -147,13 +153,14 @@ func (s *server) readProtocol(c *Connection) (protocol.RawProtocol, error) {
 	bytes = append(bytes, protocol.MagicHeader, l)
 
 	for {
-		tmp := make([]byte, 0)
+		tmp := make([]byte, maxRead)
 		read, err := reader.Read(tmp)
 		if err != nil {
 			return nil, err
 		}
 
-		bytes = append(bytes, tmp...)
+		bytes = append(bytes, tmp[0:read]...)
+		log.Debugf("receive bytes %x", tmp[0:read])
 
 		if read <= shouldRead {
 			shouldRead -= read

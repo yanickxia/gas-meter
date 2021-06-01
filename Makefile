@@ -1,4 +1,7 @@
 # note: call scripts from /scripts
 
-build:
-	go build -o build/gas  cmd/gas/gas.go
+clean:
+	rm -rf build/gas
+
+build: clean
+	go build -o build/gas cmd/gas/gas.go
