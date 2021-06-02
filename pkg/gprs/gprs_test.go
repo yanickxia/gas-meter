@@ -22,7 +22,7 @@ func TestNewModelInfo(t *testing.T) {
 			name: "test new",
 			args: args{data: testData1},
 			want: &ModemInfo{
-				ModemId: "41343238",
+				ModemId: []byte{0x41, 0x34, 0x32, 0x38},
 				Phone:   "13940052003",
 				DynIP:   net.IP{10, 0, 0, 1},
 			},

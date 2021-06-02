@@ -2,7 +2,6 @@ package gprs
 
 import (
 	"bytes"
-	"encoding/hex"
 	"errors"
 	"net"
 	"time"
@@ -15,9 +14,13 @@ const (
 type RegisterInfo = ModemInfo
 
 type ModemInfo struct {
-	ModemId string
+	ModemId []byte
 	Phone   string
 	DynIP   net.IP
+}
+
+func (m *ModemInfo) Dest() byte {
+	return m.ModemId[3]
 }
 
 func NewModelInfo(data []byte) (*ModemInfo, error) {
@@ -41,7 +44,7 @@ func NewModelInfo(data []byte) (*ModemInfo, error) {
 	_, _ = reader.Read(dynip)
 
 	return &ModemInfo{
-		ModemId: hex.EncodeToString(modelId),
+		ModemId: modelId,
 		Phone:   phoneStr,
 		DynIP:   dynip,
 	}, nil

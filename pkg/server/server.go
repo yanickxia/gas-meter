@@ -2,7 +2,6 @@ package server
 
 import (
 	"bufio"
-	"encoding/hex"
 	"errors"
 	"net"
 	"os"
@@ -10,6 +9,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/yanickxia/gas-meter/pkg/gprs"
 	"github.com/yanickxia/gas-meter/pkg/protocol"
+	"github.com/yanickxia/gas-meter/pkg/protocol/builder"
 )
 
 const (
@@ -65,15 +65,15 @@ func (s *server) handle(c net.Conn) error {
 	if err != nil {
 		return err
 	}
-	log.Infof("device registed: %v", info)
+	log.Infof("device registed:(id %x, phone %s ip %s)", info.ModemId, info.Phone, info.DynIP)
 
 	conn := &Connection{
 		c:    c,
 		info: info,
 	}
 
-	decoded, _ := hex.DecodeString("7e0867034604a4002088")
-	rawProtocol := protocol.NewRawProtocol(decoded)
+	build, err := builder.NewCollectBuilder().WithDest(info.Dest()).WithSource(0x03).WithBody([]byte{0x04, 0xa4, 0x00, 0x20}).Build()
+	rawProtocol := protocol.NewRawProtocol(build)
 
 	for {
 		if err := s.command(rawProtocol, conn); err != nil {
