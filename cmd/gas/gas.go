@@ -10,10 +10,11 @@ import (
 func init() {
 	log.SetFormatter(&log.JSONFormatter{})
 	log.SetOutput(os.Stdout)
-	log.SetLevel(log.DebugLevel)
+	log.SetLevel(log.TraceLevel)
 }
 
 func main() {
+
 	s := server.NewServer(":9876")
 	if err := s.Run(); err != nil {
 		return

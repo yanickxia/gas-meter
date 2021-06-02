@@ -72,7 +72,7 @@ func (s *server) handle(c net.Conn) error {
 		info: info,
 	}
 
-	build, err := builder.NewCollectBuilder().WithDest(info.Dest()).WithSource(0x03).WithBody([]byte{0x04, 0xa4, 0x00, 0x20}).Build()
+	build, err := builder.NewCollectBuilder().WithDest(0x11).WithSource(0x03).WithBody([]byte{0x06, 0x2e, 0xa0, 0x20}).Build()
 	rawProtocol := protocol.NewRawProtocol(build)
 
 	for {
@@ -84,7 +84,7 @@ func (s *server) handle(c net.Conn) error {
 		if err != nil {
 			return err
 		}
-		log.Infof("got data: %v", readProtocol)
+		log.Infof("got data: %x", readProtocol.Bytes())
 	}
 }
 
@@ -100,7 +100,7 @@ func (s *server) register(c net.Conn) (*gprs.RegisterInfo, error) {
 		}
 
 		bytes = append(bytes, tmp[0:read]...)
-		log.Debugf("receive bytes %x", tmp[0:read])
+		log.Tracef("receive bytes %x", tmp[0:read])
 
 		if read <= shouldRead {
 			shouldRead -= read
@@ -122,7 +122,7 @@ func (s *server) command(protocol protocol.RawProtocol, c *Connection) error {
 	if err != nil {
 		return err
 	}
-	log.Debugf("write bytes: %x", bytes[0:n])
+	log.Tracef("write bytes: %x", bytes[0:n])
 	if n != len(bytes) {
 		return errors.New("fill data failed")
 	}
@@ -160,7 +160,7 @@ func (s *server) readProtocol(c *Connection) (protocol.RawProtocol, error) {
 		}
 
 		bytes = append(bytes, tmp[0:read]...)
-		log.Debugf("receive bytes %x", tmp[0:read])
+		log.Tracef("receive bytes %x", tmp[0:read])
 
 		if read <= shouldRead {
 			shouldRead -= read
